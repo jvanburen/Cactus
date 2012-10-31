@@ -312,9 +312,7 @@ public abstract class CactusBase {
             s.setPosition(invert ? SERVO_MAX_VALUE - value : value);
         }
 
-        /**
-         * Kills power to the Motor (active braking not supported).
-         */
+        /** Kills power to the Motor (active braking not supported). */
         public void stop() {
             this.move(MIDPOINT_VALUE);
             s.off();
