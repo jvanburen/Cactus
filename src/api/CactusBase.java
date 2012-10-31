@@ -62,7 +62,7 @@ public abstract class CactusBase {
      */
     static volatile DisplayOutputStream stdout = display;
 
-    /** A private constructor to ensure all programs are static. */
+    /** A constructor that disallows instantiation by default. */
     CactusBase() {
         throw new InstantiationError(
                 "Instantiation of a base program should be disallowed");
@@ -308,6 +308,7 @@ public abstract class CactusBase {
                 else if (value == MIDPOINT_VALUE)
                     directionListener.updateDirection(currentDirection);
             }
+            currentPosition = value;
             s.setPosition(invert ? SERVO_MAX_VALUE - value : value);
         }
 
