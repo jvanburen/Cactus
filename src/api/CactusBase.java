@@ -67,11 +67,11 @@ public abstract class CactusBase {
         throw new InstantiationError(
                 "Instantiation of a base program should be disallowed");
     }
-    
+
     /**
-     * Gets the distance to the nearest object as determined by leftIR, or 
+     * Gets the distance to the nearest object as determined by leftIR, or
      * {@code SENSOR_FAILURE} if no valid reading can be made.
-     * @return The distance (in cm) to the nearest object on the left or 
+     * @return The distance (in cm) to the nearest object on the left or
      * {@code SENSOR_FAILURE} if no valid reading can be made.
      */
     public static float leftCM() {
@@ -80,11 +80,11 @@ public abstract class CactusBase {
         // SENSOR_FAILURE if failed reading
         return ret == -1 ? SENSOR_FAILURE : ret;
     }
-    
+
     /**
-     * Gets the distance to the nearest object as determined by rightIR, or 
+     * Gets the distance to the nearest object as determined by rightIR, or
      * {@code SENSOR_FAILURE} if no valid reading can be made.
-     * @return The distance (in cm) to the nearest object on the right or 
+     * @return The distance (in cm) to the nearest object on the right or
      * {@code SENSOR_FAILURE} if no valid reading can be made.
      */
     public static float rightCM() {
@@ -230,7 +230,7 @@ public abstract class CactusBase {
          * Create a Motor object representing a servo on the specified side of
          * Cactus.
          * @param servoNumber Which servomotor to use.
-         * @param side The side on which the servo is mounted 
+         * @param side The side on which the servo is mounted
          * (see {@code LEFT} and {@code RIGHT}).
          */
         public Motor(int servoNumber, boolean side) {
@@ -302,7 +302,7 @@ public abstract class CactusBase {
             if (directionListener != null) {
                 boolean currentDirection = currentPosition >= MIDPOINT_VALUE;
                 boolean newDirection = value >= MIDPOINT_VALUE;
- 
+
                 if (currentDirection != newDirection)
                     directionListener.updateDirection(true);
                 else if (value == MIDPOINT_VALUE)
