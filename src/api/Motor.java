@@ -17,7 +17,7 @@ public class Motor {
     /** The number of ticks per 1 rotation of the wheel. */
     public static final int TICKS_PER_ROTATION = 16;
     /** The number of ticks per 1 rotation of the wheel. */
-    public static final float CM_PER_TICK = Float.NaN;
+    public static final float CM_PER_TICK = 1.33f;
     /** The number of milliseconds to wait per tachometer refresh. */
     public static final int REFRESH_RATE = 100;
 
@@ -201,7 +201,6 @@ public class Motor {
             synchronized (this) {
 
                 while (true) {
-                    CactusBase.print("Tacho print");
                     try {
                         this.wait(REFRESH_RATE);
                     } catch (InterruptedException ex)

@@ -63,12 +63,6 @@ public abstract class CactusBase extends Robot {
      */
     static volatile DisplayOutputStream stdout = display;
 
-    /** A constructor that disallows instantiation by default. */
-    CactusBase() {
-        throw new InstantiationError(
-                "Instantiation of a base program should be disallowed");
-    }
-
     /**
      * Gets the distance to the nearest object as determined by leftIR, or
      * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
