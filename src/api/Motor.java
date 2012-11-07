@@ -15,16 +15,16 @@ import com.ridgesoft.robotics.Servo;
  */
 public class Motor {
     /** The number of ticks per 1 rotation of the wheel. */
-    public static final int TICKS_PER_ROTATION = 16;    
+    public static final int TICKS_PER_ROTATION = 16;
     /** The number of ticks per 1 rotation of the wheel. */
     public static final float CM_PER_TICK = Float.NaN;
     /** The number of milliseconds to wait per tachometer refresh. */
     public static final int REFRESH_RATE = 100;
-    
+
     /** The number of milliseconds to wait after a failed sensor read. */
     private static final int RESAMPLE_RATE = 12;
-    
-    
+
+
     /** Indicates the motor is on the left side of Cactus. */
     public static final int LEFT = 0;
     /** Indicates the motor is on the left side of Cactus. */
@@ -32,7 +32,7 @@ public class Motor {
     /** The maximum value that the internal Servo object can take. */
     static final int SERVO_MAX_VALUE = 100;
     /**
-     * The value halfway in between zero and the maximum value. 
+     * The value halfway in between zero and the maximum value.
      * Represents the value at which the servo is stopped.
      */
     static final int MIDPOINT_VALUE = SERVO_MAX_VALUE / 2;
@@ -69,7 +69,7 @@ public class Motor {
         this.s = IntelliBrain.getServo(servoNumber);
         this.invert = (side != 0);
         tacho = new Tachometer();
-        
+
         // Stop the motor initially
         this.move(MIDPOINT_VALUE);
         s.off();
@@ -142,9 +142,9 @@ public class Motor {
         synchronized (this) {
             if (value == currentPosition)
                 return;
-            else 
+            else
                 currentPosition = value;
-            
+
             currentPosition = value;
             s.setPosition(invert ? SERVO_MAX_VALUE - value : value);
         }
@@ -155,7 +155,7 @@ public class Motor {
         this.move(MIDPOINT_VALUE);
         s.off();
     }
-    
+
     /**
      * Gives the speed of the motor as a percentage from -100 to 100.
      * @return the speed of the motor.
@@ -165,7 +165,7 @@ public class Motor {
             return 0;
         return MIDPOINT_VALUE *100 / (MIDPOINT_VALUE - currentPosition);
     }
-    
+
     /**
      * Gets the number of ticks on this motor's tachometer.
      * @return the number of ticks on this motor's tachometer.
@@ -173,38 +173,38 @@ public class Motor {
     public int ticks() {
         return tacho.tickCount;
     }
-    
+
     private class Tachometer implements Runnable {
-        
+
         /** The pseudo-tachometer sensor. */
         private final AnalogInput sensor;
-        
+
         /** The number of ticks FORWARD the wheel has spun. */
         private volatile int tickCount;
-        
+
         /** The last recorded reading of the sensor. */
         private int prevReading;
-        
+
         public Tachometer() {
             if (invert)
                 this.sensor = IntelliBrain.getAnalogInput(
                         CactusBase.RIGHT_TACHO_PORT);
-            else 
+            else
                 this.sensor = IntelliBrain.getAnalogInput(
                         CactusBase.LEFT_TACHO_PORT);
             prevReading = sensed();
-            
+
         }
-        
+
         @Override
         public void run() {
             synchronized (this) {
-                
+
                 while (true) {
-                    
+                    CactusBase.print("Tacho print");
                     try {
                         this.wait(REFRESH_RATE);
-                    } catch (InterruptedException ex) 
+                    } catch (InterruptedException ex)
                         { /* Do Nothing. */ }
                     int pos = currentPosition;
                     int reading;
@@ -224,15 +224,10 @@ public class Motor {
                 }
             }
         }
-        
-        public int ticks() {
-            return tickCount;
-        }
-        
-        
+
         /**
          * Gets a reading from the pseudo-tachometer.
-         * @return the reading if successful, otherwise negative the number of 
+         * @return the reading if successful, otherwise negative the number of
          * milliseconds waited trying to obtain a successful reading
          */
         private int sensed() {
@@ -247,7 +242,7 @@ public class Motor {
 //                        if (currentPosition == MIDPOINT_VALUE)
 //                                this.wait();
 //                        new java.lang.Object().wait(RESAMPLE_RATE);
-//                    } catch (InterruptedException ex) 
+//                    } catch (InterruptedException ex)
 //                        { /* Motor's speed has changed from zero */ }
 //
 //                    // 150ms is the absolute maximum that can be waited
@@ -257,5 +252,5 @@ public class Motor {
 //            }
         }
     }
-    
+
 }
