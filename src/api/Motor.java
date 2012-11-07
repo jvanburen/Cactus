@@ -166,6 +166,14 @@ public class Motor {
         return MIDPOINT_VALUE *100 / (MIDPOINT_VALUE - currentPosition);
     }
     
+    /**
+     * Gets the number of ticks on this motor's tachometer.
+     * @return the number of ticks on this motor's tachometer.
+     */
+    public int ticks() {
+        return tacho.tickCount;
+    }
+    
     private class Tachometer implements Runnable {
         
         /** The pseudo-tachometer sensor. */
