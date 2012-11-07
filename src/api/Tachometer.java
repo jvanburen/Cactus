@@ -9,19 +9,31 @@ import com.ridgesoft.robotics.AnalogInput;
  * @author Jacob
  */
 public class Tachometer extends Thread {
+    /** The number of ticks per 1 rotation of the wheel. */
     public static final int TICKS_PER_ROTATION = 16;
+    
+    /** The default number of milliseconds to wait per refresh. */
     public static final int DEFAULT_REFRESH_RATE = 100;
     
+    /** The number of milliseconds to wait after a failed refresh. */
+    private static final int RESAMPLE_RATE = 20;
+    
+    /** How many milliseconds to wait per refresh. */
     public final int refreshRate;
     
+    /** The motor to listen to. */
     private Motor m;
     
-    private int side;
+    /** The last recorded speed of the motor. */
+    private volatile int motorSpeed;
     
+    /** The pseudo-tachometer sensor. */
     private final AnalogInput sensor;
     
+    /** The number of ticks FORWARD the wheel has spun. */
     private volatile int tickCount = 0;
     
+    /** The last recorded reading of the sensor. */
     private boolean prevReading;
     
     public Tachometer(Motor m) {
@@ -39,9 +51,7 @@ public class Tachometer extends Thread {
         else 
             this.sensor = IntelliBrain.getAnalogInput(CactusBase.RIGHT_TACHO_PORT);
         this.refreshRate = refreshRate;
-        this.side = m.side();
         this.prevReading = ((Tachometer)this).sensed();
-        this.start();
     }
     
     public int ticks() {
@@ -52,16 +62,15 @@ public class Tachometer extends Thread {
     public void run() {
         synchronized(this) {
             while(true) {
-                
+                while (motorSpeed == 0)
                 try {
-                    CactusBase.print("Got into the run() method");
-                    this.sleep(refreshRate);
+                    new java.lang.Object().wait(refreshRate);
                 } catch (InterruptedException ex) {
                     // Do nothing
                 }
                 boolean detected = sensed();
                 if (detected != prevReading) {
-                    if (m.direction()) //forward
+                    if (m.speed() >= 0) //forward
                         ++tickCount;
                     else 
                         --tickCount;
@@ -72,20 +81,24 @@ public class Tachometer extends Thread {
         }
     }
     
-    public boolean sensed() {
-        int sample = sensor.sample();
-        while (sample < 800 && sample > 200) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
+    private boolean sensed() {
+        synchronized (this) {
+            int sample = sensor.sample();
+            int sampleCount = 1;
+            do {
+            if (sample <= 200 || sample >= 800)
+                return sample <= 200;
+                try {
+                    new java.lang.Object().wait(RESAMPLE_RATE);
+                } catch (InterruptedException ex) 
+                    { /* Do Nothing. */ }
 
-            }
-            sample = sensor.sample();
+            } while (++sampleCount * RESAMPLE_RATE < this.refreshRate);
+            throw new RuntimeException("Distance could not be determined after "
+                    + (sampleCount - 1) + " tries" );
         }
-        return sample <= 200;
     }
-    
-    
+
     
     
 }

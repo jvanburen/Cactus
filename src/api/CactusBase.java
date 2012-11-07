@@ -5,15 +5,15 @@ import com.ridgesoft.io.DisplayOutputStream;
 import com.ridgesoft.io.Speaker;
 import com.ridgesoft.robotics.AnalogInput;
 import com.ridgesoft.robotics.RangeFinder;
-import com.ridgesoft.robotics.sensors.SharpGP2D12; 
+import com.ridgesoft.robotics.sensors.SharpGP2D12;
 
 /**
  * The base abstraction for all code to be built onto Cactus the robot.
  * @author Jacob Van Buren
- * @version 2.0.0
+ * @version 2.1.0
  * @since 2.0.0
  */
-public abstract class CactusBase {
+public abstract class CactusBase extends Robot {
     /** The port number of {@code leftWheelInput}. */
     public static final int LEFT_WHEEL_INPUT_PORT = 4;
     /** The port number of {@code rightWheelInput}. */
@@ -27,8 +27,6 @@ public abstract class CactusBase {
     /** The port number of the right wheel tick sensor. */
     public static final int RIGHT_TACHO_PORT = 5;
     
-    /** The value to return when a sensor reading fails */
-    public static final float SENSOR_FAILURE = Float.POSITIVE_INFINITY;
 
     /** The Infrared proximity sensor that tracks Cactus' left wheel. */
     public static final AnalogInput leftWheelInput
@@ -73,28 +71,28 @@ public abstract class CactusBase {
 
     /**
      * Gets the distance to the nearest object as determined by leftIR, or
-     * {@code SENSOR_FAILURE} if no valid reading can be made.
+     * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
      * @return The distance (in cm) to the nearest object on the left or
-     * {@code SENSOR_FAILURE} if no valid reading can be made.
+     * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
      */
     public static float leftCM() {
         leftIR.ping();
         float ret = leftIR.getDistanceCm();
-        // SENSOR_FAILURE if failed reading
-        return ret == -1 ? SENSOR_FAILURE : ret;
+        // SENSOR_FAILURE_FLOAT if failed reading
+        return ret == -1 ? SENSOR_FAILURE_FLOAT : ret;
     }
 
     /**
      * Gets the distance to the nearest object as determined by rightIR, or
-     * {@code SENSOR_FAILURE} if no valid reading can be made.
+     * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
      * @return The distance (in cm) to the nearest object on the right or
-     * {@code SENSOR_FAILURE} if no valid reading can be made.
+     * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
      */
     public static float rightCM() {
         rightIR.ping();
         float ret = rightIR.getDistanceCm();
-        // SENSOR_FAILURE if failed reading
-        return ret == -1 ? SENSOR_FAILURE : ret;
+        // SENSOR_FAILURE_FLOAT if failed reading
+        return ret == -1 ? SENSOR_FAILURE_FLOAT : ret;
     }
 
     /**
@@ -108,23 +106,6 @@ public abstract class CactusBase {
                     "Arrays must be of the same size");
         for (int cactus = 0; cactus < notes.length; ++cactus)
             buzzer.play(notes[cactus], dur[cactus]);
-    }
-
-    /**
-     * Tells the main thread to sleep for a certain duration.
-     * Accurate to within a couple milliseconds
-     * Will not stop on {@code InterruptedException}.
-     * @param milliseconds The number of milliseconds to sleep for.
-     */
-    public static void sleepFor(long milliseconds) {
-        // The time at which to return from this method
-        long end = System.currentTimeMillis() + milliseconds;
-
-        while (System.currentTimeMillis() < end)
-            try {
-                Thread.sleep(end - System.currentTimeMillis());
-            } catch (InterruptedException e)
-                { /* Do Nothing. */ }
     }
 
     /**
