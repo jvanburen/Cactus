@@ -55,7 +55,7 @@ public abstract class CactusBase extends Robot {
     /** The Infrared Range Sensor that detects objects to Cactus' right. */
     public static final RangeFinder rightIR
             = new SharpGP2D12(IntelliBrain.getAnalogInput(RIGHT_IR_PORT), null);
-    
+
     /** The laser diode on the front of Cactus. */
     public static final LaserDiode laser = new LaserDiode(LASER_PORT);
 
@@ -69,30 +69,28 @@ public abstract class CactusBase extends Robot {
     static volatile DisplayOutputStream stdout = display;
 
     /**
-     * Gets the distance to the nearest object as determined by leftIR, or
-     * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
-     * @return The distance (in cm) to the nearest object on the left or
-     * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
+     * Gets the distance to the nearest object as determined by leftIR.
+     * @throws SensorFailure If no reading can be made.
+     * @return The distance (in cm) to the nearest object on the left
      */
     public static float leftCM() throws SensorFailure {
         leftIR.ping();
         float ret = leftIR.getDistanceCm();
-        // SENSOR_FAILURE_FLOAT if failed reading
+        // SensorFailure if failed reading
         if (ret == -1)
             throw SENSOR_FAIL;
         return ret;
     }
 
     /**
-     * Gets the distance to the nearest object as determined by rightIR, or
-     * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
-     * @return The distance (in cm) to the nearest object on the right or
-     * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
+     * Gets the distance to the nearest object as determined by rightIR.
+     * @throws SensorFailure If no reading can be made.
+     * @return The distance (in cm) to the nearest object on the right.
      */
     public static float rightCM() throws SensorFailure {
         rightIR.ping();
         float ret = rightIR.getDistanceCm();
-        // SENSOR_FAILURE_FLOAT if failed reading
+        // SensorFailure if failed reading
         if (ret == -1)
             throw SENSOR_FAIL;
         return ret;

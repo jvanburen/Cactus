@@ -2,7 +2,7 @@
 package api;
 
 /**
- * An exception that represents a sensor failure
+ * A checked exception that represents a sensor failure.
  * @author Jacob
  */
 public class SensorFailure extends Exception {
@@ -23,14 +23,14 @@ public class SensorFailure extends Exception {
     public SensorFailure(String msg) {
         super(msg);
     }
-    
+
     /**
      * Overriding this makes catching exceptions MUCH cheaper
-     * @return 
+     * @return
      */
     @Override
     public Throwable fillInStackTrace() {
         return null;
     }
-    
+
 }
