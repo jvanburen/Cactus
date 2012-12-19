@@ -21,7 +21,7 @@ Cactus the robot.
  ******************************************************************************/
 
 There should not be multiple instances of the base program for the robot, so
-instantiation is disallowed by default.
+no constructor is included.
 
 
 /*******************************************************************************
