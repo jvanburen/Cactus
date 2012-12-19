@@ -15,18 +15,20 @@ import com.ridgesoft.robotics.sensors.SharpGP2D12;
  */
 public abstract class CactusBase extends Robot {
     /** The port number of {@code leftWheelInput}. */
-    public static final int LEFT_WHEEL_INPUT_PORT = 4;
+    public static final byte LEFT_WHEEL_INPUT_PORT = 4;
     /** The port number of {@code rightWheelInput}. */
-    public static final int RIGHT_WHEEL_INPUT_PORT = 5;
+    public static final byte RIGHT_WHEEL_INPUT_PORT = 5;
     /** The port number of {@code leftIR}. */
-    public static final int LEFT_IR_PORT = 1;
+    public static final byte LEFT_IR_PORT = 1;
     /** The port number of {@code rightIR}. */
-    public static final int RIGHT_IR_PORT = 2;
+    public static final byte RIGHT_IR_PORT = 2;
     /** The port number of the left wheel tick sensor. */
-    public static final int LEFT_TACHO_PORT = 4;
+    public static final byte LEFT_TACHO_PORT = 4;
     /** The port number of the right wheel tick sensor. */
-    public static final int RIGHT_TACHO_PORT = 5;
-    
+    public static final byte RIGHT_TACHO_PORT = 5;
+    /** The port number of the laser diode. */
+    public static final byte LASER_PORT = 1;
+
 
     /** The Infrared proximity sensor that tracks Cactus' left wheel. */
     public static final AnalogInput leftWheelInput
@@ -53,6 +55,9 @@ public abstract class CactusBase extends Robot {
     /** The Infrared Range Sensor that detects objects to Cactus' right. */
     public static final RangeFinder rightIR
             = new SharpGP2D12(IntelliBrain.getAnalogInput(RIGHT_IR_PORT), null);
+    
+    /** The laser diode on the front of Cactus. */
+    public static final LaserDiode laser = new LaserDiode(LASER_PORT);
 
     /** The "Buzzer" on the IntelliBrain PCB. */
     public static final Speaker buzzer = IntelliBrain.getBuzzer();
@@ -69,11 +74,13 @@ public abstract class CactusBase extends Robot {
      * @return The distance (in cm) to the nearest object on the left or
      * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
      */
-    public static float leftCM() {
+    public static float leftCM() throws SensorFailure {
         leftIR.ping();
         float ret = leftIR.getDistanceCm();
         // SENSOR_FAILURE_FLOAT if failed reading
-        return ret == -1 ? SENSOR_FAILURE_FLOAT : ret;
+        if (ret == -1)
+            throw SENSOR_FAIL;
+        return ret;
     }
 
     /**
@@ -82,11 +89,13 @@ public abstract class CactusBase extends Robot {
      * @return The distance (in cm) to the nearest object on the right or
      * {@code SENSOR_FAILURE_FLOAT} if no valid reading can be made.
      */
-    public static float rightCM() {
+    public static float rightCM() throws SensorFailure {
         rightIR.ping();
         float ret = rightIR.getDistanceCm();
         // SENSOR_FAILURE_FLOAT if failed reading
-        return ret == -1 ? SENSOR_FAILURE_FLOAT : ret;
+        if (ret == -1)
+            throw SENSOR_FAIL;
+        return ret;
     }
 
     /**
