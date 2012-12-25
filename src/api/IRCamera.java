@@ -32,7 +32,7 @@ public final class IRCamera {
         // Sensitivity part 3
         {0x1A, 0x40, 0x00},
         // Set mode
-        {0x33, FULL_MODE},
+        {0x33, EXTENDED_MODE},
         // ?
         {0x30, 0x08},
     };
@@ -46,9 +46,9 @@ public final class IRCamera {
     /** The address to send to the I2C bus when reading. */
     private final int slaveReadAddress = 0xB1;
     
-    /** first 18-byte read buffer for full mode. */
+    /** first 8-byte read buffer for ext mode. */
     private final static byte[] rb1 = new byte[18];
-    /** second 18-byte read buffer for full mode. */
+    /** second 4-byte read buffer for ext mode. */
     private final static byte[] rb2 = new byte[18];
     
     /** 1-byte write buffer (yes i know this is silly). */
@@ -83,23 +83,60 @@ public final class IRCamera {
         
     }
     
+    /**
+     * Fetch data from the camera and update an array of 4 blobs.
+     * @param blobs The blobs to update
+     */
+    public void detect(Blob[] blobs) throws IOException {
+        read();
+        for (int i = 0; i < 3; ++i) {
+            int off = i * 3; // The buffer offset
+            blobs[i].x = 0;
+            blobs[i].x |= rb1[off + 0];
+            blobs[i].x |= (rb1[off + 2] & 0b00110000) << 4; // get the top 2 bits
+            blobs[i].y = 0;
+            blobs[i].y |= rb1[off + 1];
+            blobs[i].y |= (rb1[off + 2] & 0b11000000) << 2; // get the top 2 bits
+            blobs[i].size =(byte) (rb1[off + 2] & 0b00001111);
+        }
+        blobs[3].x = 0;
+        blobs[3].x |= rb2[0];
+        blobs[3].x |= (rb2[2] & 0b00110000) << 4; // get the top 2 bits
+        blobs[3].y = 0;
+        blobs[3].y |= rb2[1];
+        blobs[3].y |= (rb2[2] & 0b11000000) << 2; // get the top 2 bits
+        blobs[3].size =(byte) (rb2[2] & 0b00001111);
+    }
     
-    
-    private void read() throws IOException, InterruptedException {
-        write(wb);
-        Thread.sleep(0, 25000); // Wait 25us
-        read(rb1);
-        Thread.sleep(1); // Wait 1ms for good measure
-        read(rb2);
+    /**
+     * Populates the read buffers with new data.
+     * @throws IOException if the thread is interrupted or the read fails
+     */
+    private void read() throws IOException {
+        try {
+            write(wb);
+            Thread.sleep(0, 25000); // Wait 25us
+            read(rb1);
+            Thread.sleep(0, 380000); // Wait 380us
+            read(rb2);
+        } catch (InterruptedException ex) {
+            throw new IOException(ex);
+        }
     }
     /**
      * Reads data into the read buffer.
      * @param rb The buffer to populate
+     * @throws IOException If the read fails
      */
     private void read(byte[] rb) throws IOException {
         master.transfer(slaveReadAddress, null, rb);
     }
     
+    /**
+     * Writes the buffer to the camera
+     * @param wb The buffer to write
+     * @throws IOException If the write fails
+     */
     private void write(byte[] wb) throws IOException {
         master.transfer(slaveWriteAddress, wb, null);
     }
