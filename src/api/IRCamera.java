@@ -2,6 +2,7 @@
 package api;
 
 import com.ridgesoft.io.I2CMaster;
+import java.io.IOException;
 
 /**
  * A class that abstracts the PixArt IR sensor/camera (taken from a Wii(r)
@@ -13,59 +14,87 @@ import com.ridgesoft.io.I2CMaster;
 public final class IRCamera {
     /** 
      * Data to send that initializes the camera.
-     * {@link 
      * taken from http://procrastineering.blogspot.com/2008_09_01_archive.html
      */
     private static final byte[][] INIT_DATA = {
-            {~0x31, 0x30, 0x01},
-            {~0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ~0x6F},
-            {~0x31, 0x07, 0x00, 0x41},
-            {~0x31, 0x1A, 0x40, 0x00},
-            {~0x31, 0x33, 0x03},
-            {~0x31, 0x30, 0x08},
-        };
+        // ?
+        {0x30, 0x01},
+        // Sensitivity part 1
+        {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ~0x6F},
+        // Sensitivity part 2
+        {0x07, 0x00, 0x41},
+        // Sensitivity part 3
+        {0x1A, 0x40, 0x00},
+        // Set mode
+        {0x33, 0x03},
+        // ?
+        {0x30, 0x08},
+    };
     
     /** Read/write frequency in hertz. */
-    private final int frequency;
+    private static final int frequency = 400000; // 400kHz
+
+    /** The address to send to the I2C bus when writing. */
+    private final int slaveWriteAddress = 0xB0;
     
-    /** The address of the IR Camera. */
-    private final int cameraAddress = 0xB0;
+    /** The address to send to the I2C bus when reading. */
+    private final int slaveReadAddress = 0xB1;
     
-    /** The address to send to the I2C bus. */
-    private final int slaveAddress = 0xB0;
+    /** 8-byte read buffer. */
+    private final static byte[] rb8 = new byte[8];
+    /** 4-byte read buffer. */
+    private final static byte[] rb4 = new byte[4];
     
-    /** Write buffer (to avoid reallocating it). */
-    private byte[] writeBuffer;
-    /** Read buffer (to avoid reallocating it). */
-    private byte[] readBuffer;
+    /** 1-byte write buffer (yes i know this is silly). */
+    private final static byte[] wb = {0x37}; // magic number!
     
     /** I2C port controller. */
-    private I2CMaster master;
+    private final I2CMaster master;
     
     public IRCamera(I2CMaster master) {
-        this.master = master;
-        this.frequency = 115200;
         
+        // Set the master (from the IntelliBrain controller)
+        this.master = master;
+        try {
+            init(); 
+        } catch (InterruptedException | IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
     
     
     
     /** Initialize the camera and be ready to read data. */
-    private void init() {
+    private void init() throws IOException, InterruptedException {
         // http://procrastineering.blogspot.com/2008_09_01_archive.html
-        // Since java hates unsigned bytes,
-        // for any bytes over 127 take the compliment
         
+        master.setFrequency(frequency);
         
+        for (byte[] data : INIT_DATA) {
+            write(data);
+            Thread.sleep(0, 100000); // wait 100us
+        }
         
     }
     
+    
+    
+    private void read() throws IOException, InterruptedException {
+        write(wb);
+        Thread.sleep(0, 25000); // Wait 25us
+        read(rb8);
+        Thread.sleep(0, 380000); // Wait 380us
+        read(rb4);
+    }
     /**
-     * Writes to the I2C bus
-     * @param type The type of the write to perform
-     * @param data The data to write
+     * Reads data into the read buffer.
+     * @param rb The buffer to populate
      */
-    private void write(int type, int... data) {
-        
+    private void read(byte[] rb) throws IOException {
+        master.transfer(slaveReadAddress, null, rb);
+    }
+    
+    private void write(byte[] wb) throws IOException {
+        master.transfer(slaveWriteAddress, wb, null);
     }
 }
