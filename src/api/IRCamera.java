@@ -12,6 +12,12 @@ import java.io.IOException;
  * @since 2.0.1
  */
 public final class IRCamera {
+    /** Mode number for basic mode. */
+    private static final byte BASIC_MODE = 0x01;
+    /** Mode number for extended mode. */
+    private static final byte EXTENDED_MODE = 0x03;
+    /** Mode number for full mode. */
+    private static final byte FULL_MODE = 0x05;
     /** 
      * Data to send that initializes the camera.
      * taken from http://procrastineering.blogspot.com/2008_09_01_archive.html
@@ -26,7 +32,7 @@ public final class IRCamera {
         // Sensitivity part 3
         {0x1A, 0x40, 0x00},
         // Set mode
-        {0x33, 0x03},
+        {0x33, FULL_MODE},
         // ?
         {0x30, 0x08},
     };
@@ -40,10 +46,10 @@ public final class IRCamera {
     /** The address to send to the I2C bus when reading. */
     private final int slaveReadAddress = 0xB1;
     
-    /** 8-byte read buffer. */
-    private final static byte[] rb8 = new byte[8];
-    /** 4-byte read buffer. */
-    private final static byte[] rb4 = new byte[4];
+    /** first 18-byte read buffer for full mode. */
+    private final static byte[] rb1 = new byte[18];
+    /** second 18-byte read buffer for full mode. */
+    private final static byte[] rb2 = new byte[18];
     
     /** 1-byte write buffer (yes i know this is silly). */
     private final static byte[] wb = {0x37}; // magic number!
@@ -82,9 +88,9 @@ public final class IRCamera {
     private void read() throws IOException, InterruptedException {
         write(wb);
         Thread.sleep(0, 25000); // Wait 25us
-        read(rb8);
-        Thread.sleep(0, 380000); // Wait 380us
-        read(rb4);
+        read(rb1);
+        Thread.sleep(1); // Wait 1ms for good measure
+        read(rb2);
     }
     /**
      * Reads data into the read buffer.
