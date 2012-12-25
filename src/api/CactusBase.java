@@ -6,6 +6,7 @@ import com.ridgesoft.io.Speaker;
 import com.ridgesoft.robotics.AnalogInput;
 import com.ridgesoft.robotics.RangeFinder;
 import com.ridgesoft.robotics.sensors.SharpGP2D12;
+import java.io.IOException;
 
 /**
  * The base abstraction for all code to be built onto Cactus the robot.
@@ -61,6 +62,20 @@ public abstract class CactusBase extends Robot {
 
     /** The "Buzzer" on the IntelliBrain PCB. */
     public static final Speaker buzzer = IntelliBrain.getBuzzer();
+
+    /** The PixArt IR camera on Cactus. */
+    public static final IRCamera camera;
+    // initialize the camera safely
+    static {
+        IRCamera cInit;
+        try {
+            cInit = new IRCamera(IntelliBrain.getI2CMaster());
+        } catch (IOException ex) {
+            cInit = null;
+            System.err.println("Camera not initialized");
+        }
+        camera = cInit;
+    }
 
     /**
      * The display to which data from the print methods will go.
