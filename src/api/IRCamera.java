@@ -18,7 +18,7 @@ public final class IRCamera {
     private static final byte EXTENDED_MODE = 0x03;
     /** Mode number for full mode. */
     private static final byte FULL_MODE = 0x05;
-    /** 
+    /**
      * Data to send that initializes the camera.
      * taken from http://procrastineering.blogspot.com/2008_09_01_archive.html
      */
@@ -36,53 +36,53 @@ public final class IRCamera {
         // ?
         {0x30, 0x08},
     };
-    
+
     /** Read/write frequency in hertz. */
     private static final int frequency = 400000; // 400kHz
 
     /** The address to send to the I2C bus when writing. */
     private final int slaveWriteAddress = 0xB0;
-    
+
     /** The address to send to the I2C bus when reading. */
     private final int slaveReadAddress = 0xB1;
-    
+
     /** first 8-byte read buffer for ext mode. */
     private final static byte[] rb1 = new byte[18];
     /** second 4-byte read buffer for ext mode. */
     private final static byte[] rb2 = new byte[18];
-    
+
     /** 1-byte write buffer (yes i know this is silly). */
     private final static byte[] wb = {0x37}; // magic number!
-    
+
     /** I2C port controller. */
     private final I2CMaster master;
-    
-    public IRCamera(I2CMaster master) {
-        
+
+    public IRCamera(I2CMaster master) throws IOException {
+
         // Set the master (from the IntelliBrain controller)
         this.master = master;
         try {
-            init(); 
-        } catch (InterruptedException | IOException ex) {
-            throw new RuntimeException(ex);
+            init();
+        } catch (InterruptedException ex) {
+            throw new IOException(ex);
         }
     }
-    
-    
-    
+
+
+
     /** Initialize the camera and be ready to read data. */
     private void init() throws IOException, InterruptedException {
         // http://procrastineering.blogspot.com/2008_09_01_archive.html
-        
+
         master.setFrequency(frequency);
-        
+
         for (byte[] data : INIT_DATA) {
             write(data);
             Thread.sleep(0, 100000); // wait 100us
         }
-        
+
     }
-    
+
     /**
      * Fetch data from the camera and update an array of 4 blobs.
      * @param blobs The blobs to update
@@ -107,7 +107,7 @@ public final class IRCamera {
         blobs[3].y |= (rb2[2] & 0b11000000) << 2; // get the top 2 bits
         blobs[3].size =(byte) (rb2[2] & 0b00001111);
     }
-    
+
     /**
      * Populates the read buffers with new data.
      * @throws IOException if the thread is interrupted or the read fails
@@ -131,7 +131,7 @@ public final class IRCamera {
     private void read(byte[] rb) throws IOException {
         master.transfer(slaveReadAddress, null, rb);
     }
-    
+
     /**
      * Writes the buffer to the camera
      * @param wb The buffer to write
